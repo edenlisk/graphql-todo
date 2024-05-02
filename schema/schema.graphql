@@ -1,0 +1,49 @@
+type Query {
+    todo(id: ID!): Todo,
+    user(id: ID!): User
+}
+
+type User {
+    id: ID!,
+    name: String,
+    username: String,
+    todos: [Todo!],
+}
+
+input InputUser {
+    name: String,
+    username: String,
+    password: String
+}
+
+type Comment {
+    id: ID!,
+    message: String,
+}
+
+input InputComment {
+    message: String
+}
+
+type Todo {
+    id: ID!,
+    title: String,
+    description: String,
+    date: String,
+    isCompleted: Boolean,
+    comments: [Comment!]
+}
+
+input InputTodo {
+    title: String,
+    description: String,
+    isCompleted: Boolean
+}
+
+type Mutation {
+    createTodo(inputTodo: InputTodo): Todo!
+    updateTodo(id: ID!, inputTodo: InputTodo): Todo
+    deleteTodo(id: ID!): Boolean
+    addComment(todoId: ID!, inputComment: InputComment): Comment!,
+    deleteComment(id: ID!): Boolean
+}
