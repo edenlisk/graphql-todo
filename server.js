@@ -1,5 +1,6 @@
 import {ApolloServer} from "@apollo/server";
 import {expressMiddleware as apolloMiddleware} from "@apollo/server/express4";
+import { errorFormatter as formatError } from "./utils/errorUtils.js";
 import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { config } from "dotenv";
@@ -13,7 +14,7 @@ const typeDefs = await readFile('./schema/schema.graphql', 'utf8');
 
 app.use(cors(), express.json());
 app.set('port', PORT);
-const server = new ApolloServer({typeDefs, resolvers});
+const server = new ApolloServer({typeDefs, resolvers, formatError});
 mongoose.connect(process.env.MONGO_URI, {dbName: "Todos"})
     .then(() => console.log('Connection to database was successful'))
     .catch(err => console.log(err.message));
