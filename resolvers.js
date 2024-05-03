@@ -1,7 +1,8 @@
 import TodoModel from "./models/todo.model.js";
 import CommentsModel from "./models/comments.model.js";
 import UserModel from "./models/user.model.js";
-import {config} from "dotenv";
+import {GraphQLError} from "graphql";
+import jwt from 'jsonwebtoken';
 
 export const resolvers = {
     Query: {
@@ -14,6 +15,35 @@ export const resolvers = {
     },
 
     Mutation: {
+        signup: async (_root, { inputUser: { name, username, password } }) => {
+            const existingUser = await UserModel.findOne({username});
+            if (existingUser) throw badRequest("User with " + username + " already exists", "BAD_REQUEST");
+            const user = await UserModel.create(
+                {
+                    name,
+                    username,
+                    password
+                }
+            )
+            return {
+                id: user._id,
+                ...user._doc
+            }
+        },
+        login: async (_root, { inputLogin: { username, password }}) => {
+            if (!username || password) throw badRequest("username or password is missing", "BAD_INPUTS");
+            const user = await UserModel.findOne({username}).select('+password');
+            if (!user || !(await user.verifyPassword(password))) {
+                throw badRequest("Invalid username or password", "BAD_INPUTS");
+            }
+            user.password = undefined;
+            const token = signToken(user._id);
+            return {
+                token,
+                id: user._id,
+                ...user._doc
+            }
+        },
         createTodo: async (_root, { inputTodo }) => {
             const { title, description, date } = inputTodo;
             const createdTodo = await TodoModel.create(
@@ -78,6 +108,36 @@ export const resolvers = {
     }
 }
 
+function badRequest(message, code) {
+    return new GraphQLError(message, { extensions: { code} });
+}
+
 function toIsoDate(date) {
     return date.slice(0, 'yyyy-mm-dd'.length);
+}
+
+const signToken = id => {
+    return jwt.sign({id}, process.env.JWT_SECRET_KEY, {expiresIn: process.env.EXPIRES_IN});
+}
+
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id);
+    const cookieOptions = {
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN + 20 * 60 * 60 * 1000),
+        httpOnly: true
+    }
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+    res.cookie('jwt', token, cookieOptions);
+    res
+        .status(statusCode)
+        .json(
+            {
+                status: "Success",
+                token,
+                data: {
+                    user
+                }
+            }
+        )
+    ;
 }

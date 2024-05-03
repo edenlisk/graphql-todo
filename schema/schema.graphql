@@ -40,10 +40,22 @@ input InputTodo {
     isCompleted: Boolean
 }
 
+input InputLogin {
+    username: String!,
+    password: String!
+}
+
+type LoggedIn {
+    token: String!
+    user: User
+}
+
 type Mutation {
-    createTodo(inputTodo: InputTodo): Todo!
+    signup(inputUser: InputUser): User,
+    login(inputLogin: InputLogin): LoggedIn,
+    createTodo(inputTodo: InputTodo): Todo
     updateTodo(id: ID!, inputTodo: InputTodo): Todo
     deleteTodo(id: ID!): Boolean
-    addComment(todoId: ID!, inputComment: InputComment): Comment!,
+    addComment(todoId: ID!, inputComment: InputComment): Comment,
     deleteComment(id: ID!): Boolean
 }
