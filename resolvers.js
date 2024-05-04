@@ -6,11 +6,11 @@ import jwt from 'jsonwebtoken';
 
 export const resolvers = {
     Query: {
-        todo: (_root, { id }) => {
-            return TodoModel.findById(id);
+        todo: async (_root, { id }) => {
+            return await TodoModel.findById(id);
         },
-        user: (_root, { id }) => {
-            return UserModel.findById(id);
+        user: async (_root, { id }) => {
+            return await UserModel.findById(id);
         }
     },
 
@@ -45,11 +45,12 @@ export const resolvers = {
             }
         },
         createTodo: async (_root, { inputTodo }) => {
-            const { title, description, date } = inputTodo;
+            const { title, description, userId ,date } = inputTodo;
             const createdTodo = await TodoModel.create(
                 {
                     title,
                     description,
+                    userId,
                     isCompleted: false
                 }
             )
@@ -61,7 +62,7 @@ export const resolvers = {
         },
         updateTodo: async (_root, { inputTodo, id }) => {
             const todo = await TodoModel.findById(id);
-            if (!todo) throw new Error('Nooooooooo');
+            if (!todo) throw badRequest("No todo with " + id, "BAD_INPUT");
             if (inputTodo.title) todo.title = inputTodo.title;
             if (inputTodo.description) todo.description = inputTodo.description;
             if (inputTodo.isCompleted) todo.isCompleted = inputTodo.isCompleted;
@@ -97,13 +98,13 @@ export const resolvers = {
             return CommentsModel.find({todoId});
         },
         date: (todo) => {
-            return toIsoDate(todo.createdAt);
+            return toIsoDate(todo.createdAt.toISOString());
         }
     },
 
     User: {
-        todos: ({ userId }) => {
-            return TodoModel.find({userId})
+        todos: async ({_id}) => {
+            return await TodoModel.find({userId: _id})
         }
     }
 }

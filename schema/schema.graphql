@@ -27,6 +27,7 @@ input InputComment {
 
 type Todo {
     id: ID!,
+    userId: String!
     title: String,
     description: String,
     date: String,
@@ -37,7 +38,7 @@ type Todo {
 input InputTodo {
     title: String,
     description: String,
-    isCompleted: Boolean
+    userId: String!
 }
 
 input InputLogin {
