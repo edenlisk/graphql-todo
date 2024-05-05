@@ -17,7 +17,7 @@ export const resolvers = {
     Mutation: {
         signup: async (_root, { inputUser: { name, username, password } }) => {
             const existingUser = await UserModel.findOne({username});
-            if (existingUser) throw badRequest("User with " + username + " already exists", "BAD_REQUEST");
+            if (existingUser) throw appError("User with " + username + " already exists", "BAD_REQUEST");
             const user = await UserModel.create(
                 {
                     name,
@@ -31,10 +31,10 @@ export const resolvers = {
             }
         },
         login: async (_root, { inputLogin: { username, password }}) => {
-            if (!username || password) throw badRequest("username or password is missing", "BAD_INPUTS");
+            if (!username || password) throw appError("username or password is missing", "BAD_INPUTS");
             const user = await UserModel.findOne({username}).select('+password');
             if (!user || !(await user.verifyPassword(password))) {
-                throw badRequest("Invalid username or password", "BAD_INPUTS");
+                throw appError("Invalid username or password", "BAD_INPUTS");
             }
             user.password = undefined;
             const token = signToken(user._id);
@@ -62,7 +62,7 @@ export const resolvers = {
         },
         updateTodo: async (_root, { inputTodo, id }) => {
             const todo = await TodoModel.findById(id);
-            if (!todo) throw badRequest("No todo with " + id, "BAD_INPUT");
+            if (!todo) throw appError("No todo with " + id, "BAD_INPUT");
             if (inputTodo.title) todo.title = inputTodo.title;
             if (inputTodo.description) todo.description = inputTodo.description;
             if (inputTodo.isCompleted) todo.isCompleted = inputTodo.isCompleted;
@@ -94,8 +94,8 @@ export const resolvers = {
     },
 
     Todo: {
-        comments: ({todoId}) => {
-            return CommentsModel.find({todoId});
+        comments: async ({ _id }) => {
+            return await CommentsModel.find({todoId: _id});
         },
         date: (todo) => {
             return toIsoDate(todo.createdAt.toISOString());
@@ -109,7 +109,7 @@ export const resolvers = {
     }
 }
 
-function badRequest(message, code) {
+function appError(message, code) {
     return new GraphQLError(message, { extensions: { code} });
 }
 
