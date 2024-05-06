@@ -1,44 +1,45 @@
 type Query {
     todo(id: ID!): Todo,
-    user(id: ID!): User
+    user(id: ID!): User,
+    todos(userId: ID!): [Todo!]
 }
 
 type User {
     id: ID!,
     name: String,
     username: String,
-    todos: [Todo!],
 }
 
-input InputUser {
+input CreateUserInput {
     name: String,
     username: String,
     password: String
 }
 
-type Comment {
-    id: ID!,
-    message: String,
-}
-
-input InputComment {
-    message: String
-}
 
 type Todo {
     id: ID!,
     userId: String!
-    title: String,
     description: String,
     date: String,
+    dueDate: String
     isCompleted: Boolean,
-    comments: [Comment!]
+    category: String
+    subTasks: [SubTask!]
 }
+
+type SubTask {
+    id: ID!
+    description: String,
+    isCompleted: Boolean
+}
+
 
 input InputTodo {
     title: String,
     description: String,
-    userId: String!
+    userId: String!,
+    category: String
 }
 
 input InputLogin {
@@ -51,12 +52,10 @@ type LoggedIn {
     user: User
 }
 
+
 type Mutation {
-    signup(inputUser: InputUser): User,
-    login(inputLogin: InputLogin): LoggedIn,
     createTodo(inputTodo: InputTodo): Todo
     updateTodo(id: ID!, inputTodo: InputTodo): Todo
     deleteTodo(id: ID!): Boolean
-    addComment(todoId: ID!, inputComment: InputComment): Comment,
-    deleteComment(id: ID!): Boolean
+    deleteSubTask(id: ID!): Boolean
 }

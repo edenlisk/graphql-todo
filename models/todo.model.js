@@ -6,9 +6,31 @@ const todoSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    title: String,
     description: String,
-    isCompleted: Boolean
+    isCompleted: {
+        type: Boolean,
+        default: false
+    },
+    category: String,
+    subTasks: {
+        type: [
+            {
+                description: String,
+                isCompleted: Boolean
+            }
+        ]
+    },
+    dueDate: {
+        type: Date,
+        validate: [
+            {
+                validator: function (value) {
+                    return value >= new Date();
+                },
+                message: "Due date cannot be in past"
+            }
+        ]
+    }
 }, {
     timestamps: true
 })
