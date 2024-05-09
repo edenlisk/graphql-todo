@@ -1,20 +1,8 @@
 type Query {
     todo(id: ID!): Todo,
-    user(id: ID!): User,
     todos(userId: ID!): [Todo!]
 }
 
-type User {
-    id: ID!,
-    name: String,
-    username: String,
-}
-
-input CreateUserInput {
-    name: String,
-    username: String,
-    password: String
-}
 
 
 type Todo {
@@ -40,16 +28,6 @@ input InputTodo {
     description: String,
     userId: String!,
     category: String
-}
-
-input InputLogin {
-    username: String!,
-    password: String!
-}
-
-type LoggedIn {
-    token: String!
-    user: User
 }
 
 

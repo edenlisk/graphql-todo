@@ -1,5 +1,7 @@
 import UserModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import {appError} from "../utils/helperFunctions.js";
+
 const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id);
     const cookieOptions = {
@@ -26,33 +28,26 @@ const signToken = id => {
 }
 
 
-export async function signup({ name, username, password }) {
+export async function signup(req, res, next) {
     const existingUser = await UserModel.findOne({username});
-    if (existingUser) throw appError("User with " + username + " already exists", "BAD_REQUEST");
+    if (existingUser) throw appError("User with " + req.body.username + " already exists", "BAD_REQUEST");
     const user = await UserModel.create(
         {
-            name,
-            username,
-            password
+            name: req.body.name,
+            username: req.body.username,
+            password: req.body.password
         }
     )
-    return {
-        id: user._id,
-        ...user._doc
-    }
+    createSendToken(user, 200, res);
 }
 
-export async function login({username, password}) {
+export async function login(req, res, next) {
+    const { username, password } = req.body;
     if (!username || password) throw appError("username or password is missing", "BAD_INPUTS");
     const user = await UserModel.findOne({username}).select('+password');
     if (!user || !(await user.verifyPassword(password))) {
         throw appError("Invalid username or password", "BAD_INPUTS");
     }
     user.password = undefined;
-    const token = signToken(user._id);
-    return {
-        token,
-        id: user._id,
-        ...user._doc
-    }
+    createSendToken(user, 200, res)
 }

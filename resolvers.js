@@ -1,20 +1,15 @@
 import TodoModel from "./models/todo.model.js";
-import UserModel from "./models/user.model.js";
-import { toIsoDate, appError } from "./utils/helperFunctions.js";
-import {GraphQLError} from "graphql";
-import jwt from 'jsonwebtoken';
+import {appError, toIsoDate} from "./utils/helperFunctions.js";
 import {createTodo, deleteTodo, getTodo, updateTodo} from "./controllers/todoControllers.js";
 
 export const resolvers = {
     Query: {
-        todo: async (_root, { id }) => {
+        todo: async (_root, { id }, { auth } ) => {
+            if (!auth) throw appError("Missing Authentication", "UNAUTHENTICATED");
             return getTodo({id});
         },
-        user: async (_root, { id }) => {
-            return await UserModel.findById(id);
-        },
-        todos: (_root, { userId }) => {
-            return TodoModel.find({userId});
+        todos: async (_root, { userId }) => {
+            return await TodoModel.find({userId});
         }
     },
 
@@ -32,17 +27,9 @@ export const resolvers = {
     },
 
     Todo: {
-        comments: async ({ _id }) => {
-            return await CommentsModel.find({todoId: _id});
-        },
         date: (todo) => {
             return toIsoDate(todo.createdAt.toISOString());
         },
     },
 
-    User: {
-        todos: async ({_id}) => {
-            return await TodoModel.find({userId: _id})
-        },
-    }
 }
