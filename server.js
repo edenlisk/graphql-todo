@@ -22,6 +22,7 @@ const server = new ApolloServer({typeDefs, resolvers, formatError, includeStackt
 mongoose.connect(process.env.MONGO_URI, {dbName: "Todos"})
     .then(() => console.log('Connection to database was successful'))
     .catch(err => console.log(err.message));
+
 await server.start();
 app.use('/login', login)
 app.use('/graphql', apolloMiddleware(server, {context: getContext}));
