@@ -24,11 +24,11 @@ type SubTask {
 
 
 input InputTodo {
-    title: String,
     description: String,
     userId: String!,
     category: String
 }
+
 
 
 type Mutation {
