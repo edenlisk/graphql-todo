@@ -1,6 +1,5 @@
-import TodoModel from "./models/todo.model.js";
 import {appError, toIsoDate} from "./utils/helperFunctions.js";
-import {createTodo, deleteTodo, getTodo, updateTodo} from "./controllers/todoControllers.js";
+import {createTodo, deleteTodo, getTodo, getTodos, updateTodo} from "./controllers/todoControllers.js";
 
 export const resolvers = {
     Query: {
@@ -8,20 +7,24 @@ export const resolvers = {
             if (!auth) throw appError("Missing Authentication", "UNAUTHENTICATED");
             return getTodo({id});
         },
-        todos: async (_root, { userId }) => {
-            return await TodoModel.find({userId});
+        todos: async (_root, { limit }, { auth, id: userId }) => {
+            if (!auth) throw appError('Missing Authentication', 'UNAUTHENTICATED');
+            return await getTodos({userId, limit});
         }
     },
 
     Mutation: {
-        createTodo: async (_root, { inputTodo }) => {
-            const { description, userId, category, dueDate, subTasks } = inputTodo;
+        createTodo: async (_root, { inputTodo }, {auth, id: userId}) => {
+            if (!auth) throw appError('Missing Authentication', 'UNAUTHENTICATED');
+            const { description, category, dueDate, subTasks } = inputTodo;
             return createTodo({description, userId, category, dueDate, subTasks});
         },
-        updateTodo: (_root, { inputTodo, id }) => {
+        updateTodo: (_root, { inputTodo, id }, { auth }) => {
+            if (!auth) throw appError('Missing Authentication', 'UNAUTHENTICATED');
             return updateTodo({...inputTodo, id});
         },
-        deleteTodo: async (_root, { id }) => {
+        deleteTodo: async (_root, { id }, { auth }) => {
+            if (!auth) throw appError('Missing Authentication', 'UNAUTHENTICATED');
             return deleteTodo({id});
         }
     },
