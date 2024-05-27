@@ -8,7 +8,7 @@ import {resolvers} from "./resolvers.js";
 import cors from 'cors';
 import mongoose from "mongoose";
 import {authMiddleWare, getContext} from "./utils/helperFunctions.js";
-import {login} from "./controllers/authControllers.js";
+import {login, signup} from "./controllers/authControllers.js";
 
 config();
 const PORT = process.env.PORT;
@@ -24,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {dbName: "Todos"})
     .catch(err => console.log(err.message));
 
 await server.start();
+app.use('/signup', signup);
 app.use('/login', login)
 app.use('/graphql', apolloMiddleware(server, {context: getContext}));
 
