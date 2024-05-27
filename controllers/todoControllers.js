@@ -46,6 +46,6 @@ export async function getTodo ({id}) {
     return todo;
 }
 
-export async function getTodos ({ userId }) {
-    return TodoModel.find({userId});
+export async function getTodos ({ userId, limit }) {
+    return TodoModel.find({userId}).sort('-createAt').limit(limit);
 }
